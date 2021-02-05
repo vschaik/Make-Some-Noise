@@ -14,22 +14,23 @@ def makesomenoise(xi, acf, fs):
     '''
     
     import numpy as np
-    
+
     N = xi.shape[0]          # Get number of samples
-    psd = np.fft.fft(acf, N) # Calculate psd (Power Spectral Density) from acf
+    psd = np.fft.fft(acf, N) # Calculate PSD (Power Spectral Density) from ACF
     psd[0] = 0               # Zero out the DC component (remove mean)
     
-    Xf = np.sqrt(2 * np.pi * fs * N * psd) # Convert psd to Fourier amplitudes
+    Af = np.sqrt(2 * np.pi * fs * N * psd) # Convert PSD to Fourier amplitudes
     mx = np.mean(xi)         # Calculate mean of samples 
     x  = xi - mx             # Make zero mean
-    xs = np.sort(x)          # Store sorted signal xs with correct pdf
+    xs = np.sort(x)          # Store sorted signal xs with correct PDF
     k  = 1 
     idxr = np.zeros(N)       # Reference index array
     while(k != 0):
-        Rk  = np.fft.fft(x)  # Compute FT of noise
-        Rp  = np.arctan2(np.imag(Rk), np.real(Rk))  # Get phases
-        x   = np.real(np.fft.ifft((np.exp(1.j*Rp)) * np.abs(Xf))) # Give signal correct PSD and original phases
-        idx = np.argsort(x)  # Get rank of signal with correct PSD
+        Fx  = np.fft.fft(x)  # Compute FT of noise
+        Px  = np.arctan2(np.imag(Fx), np.real(Fx))  # Get phases
+        # Create a signal with correct PSD and original phases
+        xg  = np.real(np.fft.ifft((np.exp(1.j*Px)) * np.abs(Af))) 
+        idx = np.argsort(xg) # Get rank indices of signal with correct PSD
         x[idx] = xs          # Put original noise samples in desired rank order. 
         k = k+1              # Increment counter
         if (idx == idxr).all() :
